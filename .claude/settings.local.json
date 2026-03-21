@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find C:/Users/PCK/Desktop/Programming/2026/side/marathon-analyst -type f -not -path */.*)",
+      "Bash(npm install:*)",
+      "Bash(npm run:*)",
+      "Bash(rm -rf frontend)",
+      "Bash(npx create-next-app@latest frontend --typescript --eslint --no-tailwind --app --no-src-dir --import-alias \"@/*\")",
+      "Bash(npx create-next-app@latest frontend-next --typescript --eslint --no-tailwind --app --no-src-dir --import-alias \"@/*\")",
+      "Bash(printf \"No\\\\nNo\\\\n\")",
+      "Bash(printf \"No\\\\r\\\\nNo\\\\r\\\\n\")",
+      "Bash(npx create-next-app@latest frontend-next --typescript --eslint --no-tailwind --app --no-src-dir --import-alias \"@/*\" --yes)",
+      "Bash(npx tsc:*)",
+      "Bash(npx eslint:*)"
+    ]
+  }
+}
