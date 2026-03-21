@@ -68,7 +68,8 @@ export default function HomePage() {
               right: '22%',
               width: 1,
               height: '100%',
-              background: 'linear-gradient(to bottom, transparent 0%, rgba(0,184,255,0.18) 40%, transparent 100%)',
+              background:
+                'linear-gradient(to bottom, transparent 0%, rgba(0,184,255,0.18) 40%, transparent 100%)',
               transform: 'rotate(12deg) scaleX(2)',
             }}
           />
@@ -459,7 +460,8 @@ export default function HomePage() {
                       content: '""',
                       position: 'absolute',
                       inset: 0,
-                      background: 'linear-gradient(to bottom, rgba(0,0,0,0) 25%, rgba(0,0,0,0.55) 100%)',
+                      background:
+                        'linear-gradient(to bottom, rgba(0,0,0,0) 25%, rgba(0,0,0,0.55) 100%)',
                     },
                   }}
                 >
