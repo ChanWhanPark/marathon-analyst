@@ -14,48 +14,11 @@ import LineString from 'ol/geom/LineString'
 import MultiLineString from 'ol/geom/MultiLineString'
 import { fromLonLat, toLonLat } from 'ol/proj'
 import { getDistance } from 'ol/sphere'
-import { Style, Stroke, Circle, Fill, Text } from 'ol/style'
 import 'ol/ol.css'
+import { gpxStyle, startStyle, endStyle, kmMarkerStyle } from '../data/mapStyles'
 
 interface MapViewProps {
   gpxContent?: string | null
-}
-
-const gpxStyle = new Style({
-  stroke: new Stroke({ color: '#e53935', width: 3 }),
-})
-
-const startStyle = new Style({
-  image: new Circle({
-    radius: 8,
-    fill: new Fill({ color: '#43a047' }),
-    stroke: new Stroke({ color: '#fff', width: 2 }),
-  }),
-})
-
-const endStyle = new Style({
-  image: new Circle({
-    radius: 8,
-    fill: new Fill({ color: '#e53935' }),
-    stroke: new Stroke({ color: '#fff', width: 2 }),
-  }),
-})
-
-function kmMarkerStyle(km: number) {
-  return new Style({
-    image: new Circle({
-      radius: 5,
-      fill: new Fill({ color: '#1565c0' }),
-      stroke: new Stroke({ color: '#fff', width: 1.5 }),
-    }),
-    text: new Text({
-      text: `${km}km`,
-      offsetY: -14,
-      font: 'bold 11px sans-serif',
-      fill: new Fill({ color: '#1565c0' }),
-      stroke: new Stroke({ color: '#fff', width: 3 }),
-    }),
-  })
 }
 
 /** LineString 좌표(EPSG:3857)에서 1km 간격 마커 + 출발/도착 Feature 생성 */
@@ -83,8 +46,11 @@ function buildMarkerFeatures(coords: number[][]): Feature[] {
       const y = prev[1] + t * (curr[1] - prev[1])
       const km = nextKm / 1000
 
+      const hasEle = prev.length >= 3 && curr.length >= 3
+      const elevation = hasEle ? prev[2] + t * (curr[2] - prev[2]) : undefined
+
       const f = new Feature({ geometry: new Point([x, y]) })
-      f.setStyle(kmMarkerStyle(km))
+      f.setStyle(kmMarkerStyle(km, elevation))
       features.push(f)
 
       nextKm += 1000

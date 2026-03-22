@@ -24,11 +24,7 @@ export default function LoginDialog({ open, onClose }: LoginDialogProps) {
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
       <DialogTitle sx={{ pr: 6 }}>
         로그인
-        <IconButton
-          onClick={onClose}
-          size="small"
-          sx={{ position: 'absolute', right: 12, top: 12 }}
-        >
+        <IconButton onClick={onClose} size="small" sx={{ position: 'absolute', right: 12, top: 12 }}>
           <CloseIcon fontSize="small" />
         </IconButton>
       </DialogTitle>
