@@ -15,10 +15,85 @@ import MultiLineString from 'ol/geom/MultiLineString'
 import { fromLonLat, toLonLat } from 'ol/proj'
 import { getDistance } from 'ol/sphere'
 import 'ol/ol.css'
-import { gpxStyle, startStyle, endStyle, kmMarkerStyle } from '../data/mapStyles'
+import {
+  gpxStyle,
+  ascentStyle,
+  descentStyle,
+  startStyle,
+  endStyle,
+  kmMarkerStyle,
+  directionArrowStyle,
+} from '../data/mapStyles'
 
 interface MapViewProps {
   gpxContent?: string | null
+  colorByElevation?: boolean
+}
+
+/** 고도 변화에 따라 오르막(빨강)/내리막(파랑)으로 색칠된 LineString Feature 생성 */
+function buildElevationColoredFeatures(coords: number[][]): Feature[] {
+  if (coords.length < 2 || coords[0].length < 3) return []
+
+  const features: Feature[] = []
+  let segCoords: number[][] = [coords[0]]
+  let ascending = coords[1][2] >= coords[0][2]
+
+  for (let i = 1; i < coords.length; i++) {
+    const currAscending = coords[i][2] >= coords[i - 1][2]
+
+    if (currAscending !== ascending) {
+      segCoords.push(coords[i])
+      const f = new Feature({ geometry: new LineString(segCoords) })
+      f.setStyle(ascending ? ascentStyle : descentStyle)
+      features.push(f)
+      segCoords = [coords[i]]
+      ascending = currAscending
+    } else {
+      segCoords.push(coords[i])
+    }
+  }
+
+  if (segCoords.length >= 2) {
+    const f = new Feature({ geometry: new LineString(segCoords) })
+    f.setStyle(ascending ? ascentStyle : descentStyle)
+    features.push(f)
+  }
+
+  return features
+}
+
+/** LineString 좌표(EPSG:3857)에서 100m 간격 진행방향 화살표 Feature 생성 */
+function buildDirectionFeatures(coords: number[][]): Feature[] {
+  if (coords.length < 2) return []
+  const features: Feature[] = []
+
+  let accumulated = 0
+  let nextMark = 100
+
+  for (let i = 1; i < coords.length; i++) {
+    const prev = coords[i - 1]
+    const curr = coords[i]
+    const segDist = getDistance(toLonLat(prev), toLonLat(curr))
+
+    while (accumulated + segDist >= nextMark) {
+      const t = (nextMark - accumulated) / segDist
+      const x = prev[0] + t * (curr[0] - prev[0])
+      const y = prev[1] + t * (curr[1] - prev[1])
+
+      // 북쪽(+y) 기준 시계방향 각도
+      const bearing = Math.atan2(curr[0] - prev[0], curr[1] - prev[1])
+
+      const f = new Feature({ geometry: new Point([x, y]) })
+      f.setStyle(directionArrowStyle(bearing))
+      features.push(f)
+
+      nextMark += 100
+    }
+
+    accumulated += segDist
+  }
+
+  return features
 }
 
 /** LineString 좌표(EPSG:3857)에서 1km 간격 마커 + 출발/도착 Feature 생성 */
@@ -67,11 +142,14 @@ function buildMarkerFeatures(coords: number[][]): Feature[] {
   return features
 }
 
-export default function MapView({ gpxContent }: MapViewProps) {
+export default function MapView({ gpxContent, colorByElevation }: MapViewProps) {
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstance = useRef<Map | null>(null)
   const gpxLayerRef = useRef<VectorLayer | null>(null)
+  const directionLayerRef = useRef<VectorLayer | null>(null)
   const markerLayerRef = useRef<VectorLayer | null>(null)
+  const colorLayerRef = useRef<VectorLayer | null>(null)
+  const allCoordsRef = useRef<number[][]>([])
 
   useEffect(() => {
     if (!mapRef.current) return
@@ -101,10 +179,19 @@ export default function MapView({ gpxContent }: MapViewProps) {
       map.removeLayer(gpxLayerRef.current)
       gpxLayerRef.current = null
     }
+    if (colorLayerRef.current) {
+      map.removeLayer(colorLayerRef.current)
+      colorLayerRef.current = null
+    }
+    if (directionLayerRef.current) {
+      map.removeLayer(directionLayerRef.current)
+      directionLayerRef.current = null
+    }
     if (markerLayerRef.current) {
       map.removeLayer(markerLayerRef.current)
       markerLayerRef.current = null
     }
+    allCoordsRef.current = []
 
     if (!gpxContent) return
 
@@ -139,13 +226,43 @@ export default function MapView({ gpxContent }: MapViewProps) {
       }
     })
 
+    allCoordsRef.current = allCoords
+
     if (allCoords.length >= 2) {
+      const directionSource = new VectorSource({ features: buildDirectionFeatures(allCoords) })
+      const directionLayer = new VectorLayer({ source: directionSource })
+      map.addLayer(directionLayer)
+      directionLayerRef.current = directionLayer
+
       const markerSource = new VectorSource({ features: buildMarkerFeatures(allCoords) })
       const markerLayer = new VectorLayer({ source: markerSource })
       map.addLayer(markerLayer)
       markerLayerRef.current = markerLayer
     }
   }, [gpxContent])
+
+  // 고도 색상 레이어: colorByElevation 또는 gpxContent 변경 시 갱신
+  useEffect(() => {
+    const map = mapInstance.current
+    if (!map) return
+
+    if (colorLayerRef.current) {
+      map.removeLayer(colorLayerRef.current)
+      colorLayerRef.current = null
+    }
+
+    if (!colorByElevation || allCoordsRef.current.length < 2) return
+
+    const colorSource = new VectorSource({
+      features: buildElevationColoredFeatures(allCoordsRef.current),
+    })
+    const colorLayer = new VectorLayer({ source: colorSource })
+    // gpxLayer 바로 위, direction/marker 아래에 삽입
+    const layers = map.getLayers()
+    const gpxIdx = layers.getArray().indexOf(gpxLayerRef.current!)
+    map.getLayers().insertAt(gpxIdx + 1, colorLayer)
+    colorLayerRef.current = colorLayer
+  }, [gpxContent, colorByElevation])
 
   return <div ref={mapRef} style={{ width: '100%', height: '100%' }} />
 }

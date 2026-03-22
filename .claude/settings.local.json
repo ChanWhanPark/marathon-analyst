@@ -11,7 +11,15 @@
       "Bash(printf \"No\\\\r\\\\nNo\\\\r\\\\n\")",
       "Bash(npx create-next-app@latest frontend-next --typescript --eslint --no-tailwind --app --no-src-dir --import-alias \"@/*\" --yes)",
       "Bash(npx tsc:*)",
-      "Bash(npx eslint:*)"
+      "Bash(npx eslint:*)",
+      "WebFetch(domain:immarathon.com)",
+      "Bash(curl -s \"https://immarathon.com/report_2026\" -H \"User-Agent: Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36\")",
+      "Bash(curl -s \"https://immarathon.com/report_2026\")",
+      "Bash(grep -oP '\\(?<=<h[1-6][^>]*>\\)[^<]+|\\(?<=<span[^>]*>\\)[^<]{0,100}|\\(?<=<p[^>]*>\\)[^<]{0,100}')",
+      "Bash(grep -v \"^[[:space:]]*$\")",
+      "Bash(grep -v \"^[[:space:]]*$\\\\|style\\\\|script\")",
+      "Bash(grep -oP '\\(?<=>\\)[^<]{10,}\\(?=<\\)')",
+      "Bash(grep -oP '\\(?<=>\\)[^<]{5,}\\(?=<\\)')"
     ]
   }
 }
