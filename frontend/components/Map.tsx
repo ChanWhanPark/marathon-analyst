@@ -17,8 +17,7 @@ import { getDistance } from 'ol/sphere'
 import 'ol/ol.css'
 import {
   gpxStyle,
-  ascentStyle,
-  descentStyle,
+  elevationBandStyle,
   startStyle,
   endStyle,
   kmMarkerStyle,
@@ -30,24 +29,26 @@ interface MapViewProps {
   colorByElevation?: boolean
 }
 
-/** 고도 변화에 따라 오르막(빨강)/내리막(파랑)으로 색칠된 LineString Feature 생성 */
+/** 절대 고도값을 500m 단위 밴드로 색칠된 LineString Feature 생성 */
 function buildElevationColoredFeatures(coords: number[][]): Feature[] {
   if (coords.length < 2 || coords[0].length < 3) return []
 
+  const bandOf = (ele: number) => Math.floor(ele / 500)
+
   const features: Feature[] = []
   let segCoords: number[][] = [coords[0]]
-  let ascending = coords[1][2] >= coords[0][2]
+  let currentBand = bandOf(coords[0][2])
 
   for (let i = 1; i < coords.length; i++) {
-    const currAscending = coords[i][2] >= coords[i - 1][2]
+    const band = bandOf(coords[i][2])
 
-    if (currAscending !== ascending) {
+    if (band !== currentBand) {
       segCoords.push(coords[i])
       const f = new Feature({ geometry: new LineString(segCoords) })
-      f.setStyle(ascending ? ascentStyle : descentStyle)
+      f.setStyle(elevationBandStyle(coords[i - 1][2]))
       features.push(f)
       segCoords = [coords[i]]
-      ascending = currAscending
+      currentBand = band
     } else {
       segCoords.push(coords[i])
     }
@@ -55,7 +56,7 @@ function buildElevationColoredFeatures(coords: number[][]): Feature[] {
 
   if (segCoords.length >= 2) {
     const f = new Feature({ geometry: new LineString(segCoords) })
-    f.setStyle(ascending ? ascentStyle : descentStyle)
+    f.setStyle(elevationBandStyle(segCoords[0][2]))
     features.push(f)
   }
 

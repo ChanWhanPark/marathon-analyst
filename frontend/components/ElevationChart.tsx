@@ -78,7 +78,7 @@ export default function ElevationChart({ gpxContent }: Props) {
   return (
     <>
       {/* 토글 버튼 */}
-      <Box sx={{ position: 'absolute', bottom: 100, right: 16, zIndex: 11 }}>
+      <Box sx={{ position: 'absolute', top: '50%', right: 16, zIndex: 11 }}>
         <IconButton
           onClick={() => setOpen((o) => !o)}
           title="고도 차트"

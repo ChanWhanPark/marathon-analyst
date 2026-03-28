@@ -3,9 +3,11 @@
 import { useState } from 'react'
 import { Alert, Box, IconButton, Snackbar, Tooltip, Typography } from '@mui/material'
 import TerrainIcon from '@mui/icons-material/Terrain'
+import { ELEVATION_BANDS } from '@/data/mapStyles'
 import dynamic from 'next/dynamic'
 import GpxUpload from '@/components/GpxUpload'
 import ElevationChart from '@/components/ElevationChart'
+import RaceStrategy from '@/components/RaceStrategy'
 
 const MapView = dynamic(() => import('@/components/Map'), { ssr: false })
 
@@ -42,7 +44,7 @@ export default function CoursePage() {
 
       {/* 고도 색상 토글 버튼 */}
       {gpxContent && (
-        <Box sx={{ position: 'absolute', bottom: 148, right: 16, zIndex: 11 }}>
+        <Box sx={{ position: 'absolute', top: 'calc(50% - 56px)', right: 16, zIndex: 11 }}>
           <Tooltip title="고도별 색상 표시" placement="left">
             <IconButton
               onClick={() => setColorByElevation((v) => !v)}
@@ -79,10 +81,7 @@ export default function CoursePage() {
             gap: 0.5,
           }}
         >
-          {[
-            { color: '#e53935', label: '오르막' },
-            { color: '#1565c0', label: '내리막' },
-          ].map(({ color, label }) => (
+          {ELEVATION_BANDS.map(({ color, label }) => (
             <Box key={label} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Box sx={{ width: 24, height: 4, bgcolor: color, borderRadius: 1 }} />
               <Typography variant="caption" fontWeight={600}>
@@ -94,6 +93,7 @@ export default function CoursePage() {
       )}
 
       {gpxContent && <ElevationChart gpxContent={gpxContent} />}
+      {gpxContent && <RaceStrategy gpxContent={gpxContent} />}
       <Snackbar
         open={toastOpen}
         autoHideDuration={3000}

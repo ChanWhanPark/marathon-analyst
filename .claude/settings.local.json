@@ -19,7 +19,9 @@
       "Bash(grep -v \"^[[:space:]]*$\")",
       "Bash(grep -v \"^[[:space:]]*$\\\\|style\\\\|script\")",
       "Bash(grep -oP '\\(?<=>\\)[^<]{10,}\\(?=<\\)')",
-      "Bash(grep -oP '\\(?<=>\\)[^<]{5,}\\(?=<\\)')"
+      "Bash(grep -oP '\\(?<=>\\)[^<]{5,}\\(?=<\\)')",
+      "Bash(find /c/Users/PCK/Desktop/Programming/2026/side/marathon-analyst/frontend-next -name *.tsx)",
+      "Bash(find C:/Users/PCK/Desktop/Programming/2026/side/marathon-analyst/frontend -name *.tsx)"
     ]
   }
 }
